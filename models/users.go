@@ -1,0 +1,48 @@
+package models
+
+import (
+	"time"
+
+	"github.com/adk-saugat/cofund/db"
+	"github.com/adk-saugat/cofund/utils"
+)
+
+type User struct{
+	ID 			int64 		`json:"id"`
+	FirstName	string 		`json:"firstName" binding:"required"`
+	LastName 	string 		`json:"lastName" binding:"required"`
+	Email 		string 		`json:"email" binding:"required"`
+	Password 	string 		`json:"password" binding:"required"`
+	CreatedAt 	time.Time 	`json:"createdAt"`
+}
+
+func (user *User) Save() error{
+	query := `
+		INSERT INTO users (firstName, lastName, email, password, createdAt)
+		VALUES (?, ?, ?, ?, ?)
+	`
+
+	stmt, err := db.DB.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	//hashing password
+	hashedPassword, err := utils.HashPassword(user.Password)
+	if err != nil {
+		return err
+	}
+
+	result , err := stmt.Exec(user.FirstName, user.LastName, user.Email, hashedPassword, time.Now())
+	if err != nil {
+		return err
+	}
+
+	userId, err := result.LastInsertId()
+	user.ID = userId
+	user.CreatedAt = time.Now()
+	user.Password = hashedPassword
+
+	return err
+}
