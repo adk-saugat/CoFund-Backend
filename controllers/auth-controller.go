@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/adk-saugat/cofund/models"
+	"github.com/adk-saugat/cofund/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,7 +23,13 @@ func LoginUser(ctx *gin.Context){
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Login successful!"})
+	token, err := utils.GenerateToken(user.Email, user.ID)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Couldnot generate token!"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Login successful!", "token": token})
 }
 
 func RegisterUser(ctx *gin.Context){
@@ -40,5 +47,9 @@ func RegisterUser(ctx *gin.Context){
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"message": "User created successfully!", "user" : user})
+	ctx.JSON(http.StatusCreated, gin.H{"message": "User created successfully!", "user" : gin.H{
+		"userId": user.ID,
+		"fullName": user.FirstName + " " + user.LastName,
+		"email": user.Email,
+	}})
 }
