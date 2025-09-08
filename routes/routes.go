@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/adk-saugat/cofund/controllers"
+	"github.com/adk-saugat/cofund/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,6 +14,10 @@ func RegisterRoutes(server *gin.Engine){
 		ctx.JSON(http.StatusOK, gin.H{"message": "Hello, World!"})
 	})
 
-	server.POST("/register", controllers.RegisterUser)
-	server.POST("/login", controllers.LoginUser)
+	server.POST("/auth/register", controllers.RegisterUser)
+	server.POST("/auth/login", controllers.LoginUser)
+	
+	authenticated :=  server.Group("/")
+	authenticated.Use(middlewares.Authenticate)
+	authenticated.GET("/auth/me", controllers.SeeProfile)
 }

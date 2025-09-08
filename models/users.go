@@ -17,6 +17,21 @@ type User struct{
 	CreatedAt 	time.Time 	`json:"createdAt"`
 }
 
+func GetProfileById(userId int64) (*User, error){
+	query :=  `
+		SELECT id, firstName, lastName, email FROM users where id = ?
+	`
+	row := db.DB.QueryRow(query, userId)
+
+	var user User
+	err := row.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email)
+	if err != nil{
+		return nil, err
+	}
+	
+	return &user, nil
+}
+
 func (user *User) ValidateCredentials() error{
 	query := `
 		SELECT id, password FROM users WHERE email = ?

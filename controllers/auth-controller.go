@@ -8,6 +8,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func SeeProfile(ctx *gin.Context){
+	userId := ctx.GetInt64("userId")
+	user, err := models.GetProfileById(userId)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Couldnot show user profile!"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"user": gin.H{
+		"fullName": user.FirstName + " " + user.LastName,
+		"email": user.Email,
+		"id": user.ID,
+		"createdAt": user.CreatedAt,
+	}})
+}
+
 func LoginUser(ctx *gin.Context){
 	var user models.User
 

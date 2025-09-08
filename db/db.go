@@ -38,4 +38,19 @@ func createTables(){
 	if err != nil {
 		panic("Couldnot create table!")
 	}
+
+	createWalletTable := `
+		CREATE TABLE IF NOT EXISTS wallets(
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			balance DECIMAL(10, 2) DEFAULT 0.00,
+			interestEarned DECIMAL(12,2) DEFAULT 0.00,
+			createdAt TIMESTAMP NOT NULL,
+			userId INTEGER,
+			FOREIGN KEY(userId) REFERENCES users(id)
+		)
+	`
+	_ , err = DB.Exec(createWalletTable)
+	if err != nil {
+		panic("Couldnot create table!")
+	}
 }
