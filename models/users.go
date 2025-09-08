@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/adk-saugat/cofund/db"
@@ -9,11 +10,32 @@ import (
 
 type User struct{
 	ID 			int64 		`json:"id"`
-	FirstName	string 		`json:"firstName" binding:"required"`
-	LastName 	string 		`json:"lastName" binding:"required"`
+	FirstName	string 		`json:"firstName"`
+	LastName 	string 		`json:"lastName"`
 	Email 		string 		`json:"email" binding:"required"`
 	Password 	string 		`json:"password" binding:"required"`
 	CreatedAt 	time.Time 	`json:"createdAt"`
+}
+
+func (user *User) ValidateCredentials() error{
+	query := `
+		SELECT id, password FROM users WHERE email = ?
+	`
+
+	row := db.DB.QueryRow(query, user.Email)
+
+	var retrievedPassword string
+	err := row.Scan(&user.ID, &retrievedPassword)
+	if err != nil{
+		return err
+	}
+
+	passwordIsValid := utils.CheckPasswordHash(user.Password, retrievedPassword)
+	if !passwordIsValid {
+		return errors.New("credentials invalid")
+	}
+
+	return nil
 }
 
 func (user *User) Save() error{
